@@ -21,12 +21,20 @@ class Database
     db.execute("select md5, path, bytes from same_files order by path;")
   end
 
+  def duplicate
+    db.execute("select md5, group_concat(path, ', '), count(md5) as count_md5 from same_files group by(md5) having count_md5 > 1; ")
+  end
+
   def setup
     puts "Creating table same_files"
     db.execute_batch(
       "create table if not exists same_files(md5 CHAR(32),path TEXT, bytes INTEGER);"
     )
     puts "Creating table ok"
+  end
+
+  def remove_entries(path)
+    db.execute("delete from same_files where path = ?;", path)
   end
 
   private
